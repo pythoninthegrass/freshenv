@@ -1,20 +1,29 @@
-from io import BytesIO
-from typing import Dict, List
-import click
-from docker import APIClient, errors
 import dockerpty
+import click
+import git
+from docker import APIClient, errors
+from freshenv.console import console
 from freshenv.util import PythonLiteralOption
 from freshenv.view import count_environents
-from freshenv.console import console
-from requests import exceptions, get
+from io import BytesIO
 from os import getcwd, path
+from pathlib import Path
+from requests import exceptions, get
 from rich import print
+from typing import Dict, List
 
 client: APIClient = None
 current_directory = getcwd()
 folder = path.basename(current_directory)
 local_mount_binds = [f"{current_directory}:/home/{folder}:delegated"]
-google_dns = ["8.8.8.8"]
+google_dns = ["8.8.8.8"]        # TODO: fallback DNS, override with typer
+
+# if .git exists, use git to populate maintainer username
+if Path('../.git').exists():
+    r = git.Repo('../.git').config_reader()
+    author = r.get_value('user', 'name')
+else:
+    author = 'raiyanyahya'
 
 def get_port_bindings(ports: List[str]) -> Dict:
     port_bindings = {}
@@ -28,7 +37,7 @@ def create_environment(flavour: str, command: str, ports: List[str], name: str, 
         name = str(count_environents() + 1)
     container = client.create_container(
         name=f"freshenv_{name}",
-        image=f"raiyanyahya/freshenv-flavours/{flavour}",
+        image=f"{author}/freshenv-flavours/{flavour}",
         stdin_open=stdin_open,
         tty=tty,
         command=command,
@@ -48,13 +57,13 @@ def pull_and_try_again(flavour: str, command: str, ports: List[str], name: str, 
     except (errors.ImageNotFound, exceptions.HTTPError):
         print(":x: flavour doesnt exist")
 
+# TODO: set raw github url as default and override with typer
 def get_dockerfile_path(flavour: str) -> bytes:
-    req = get(f"https://raw.githubusercontent.com/raiyanyahya/freshenv-flavours/master/{flavour}")
+    req = get(f"https://raw.githubusercontent.com/{author}/freshenv-flavours/master/{flavour}")
     return req.text.encode('utf-8')
 
 def build_environment(flavour: str, command: str, ports: List[str], name: str, client: APIClient):
     try:
-
         with console.status("Flavour doesnt exist locally. Building flavour...", spinner="dots8Bit"):
             [line for line in client.build(fileobj=BytesIO(get_dockerfile_path(flavour=flavour)), tag=f"raiyanyahya/freshenv-flavours/{flavour}", rm=True, pull=True, decode=True)] # pylint: disable=expression-not-assigned
         container = create_environment(flavour, command, ports, name, client)
