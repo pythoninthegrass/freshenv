@@ -172,6 +172,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "python-decouple"
+version = "3.6"
+description = "Strict separation of settings from code."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pywin32"
 version = "227"
 description = "Python for Window Extensions"
@@ -274,7 +282,7 @@ test = ["websockets"]
 [metadata]
 lock-version = "1.1"
 python-versions = "3.10.5"
-content-hash = "2fe24f650b77aa05f5f59377da7124a124321a5678de2b4614e64be1d6c1ccc4"
+content-hash = "eb88064178add9bb6641fc38272c66013727b4cdce425eb60fd7fff7bc31c8aa"
 
 [metadata.files]
 asttokens = [
@@ -377,6 +385,10 @@ markupsafe = [
 pygments = [
     {file = "Pygments-2.12.0-py3-none-any.whl", hash = "sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519"},
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
+]
+python-decouple = [
+    {file = "python-decouple-3.6.tar.gz", hash = "sha256:2838cdf77a5cf127d7e8b339ce14c25bceb3af3e674e039d4901ba16359968c7"},
+    {file = "python_decouple-3.6-py3-none-any.whl", hash = "sha256:6cf502dc963a5c642ea5ead069847df3d916a6420cad5599185de6bab11d8c2e"},
 ]
 pywin32 = [
     {file = "pywin32-227-cp27-cp27m-win32.whl", hash = "sha256:371fcc39416d736401f0274dd64c2302728c9e034808e37381b5e1b22be4a6b0"},
