@@ -1,7 +1,7 @@
 import click
-import git
 import re
-# from icecream import ic
+from decouple import AutoConfig
+from icecream import ic
 from pathlib import Path
 from rich import pretty, print
 from urllib.request import urlopen
@@ -11,19 +11,24 @@ from sys import exit
 # verbose icecream
 # ic.configureOutput(includeContext=True)
 
-# if .git exists, use git to populate maintainer username
-if Path('../.git').exists():
-    r = git.Repo('../.git').config_reader()
-    author = r.get_value('user', 'name')
-    url = f"https://raw.githubusercontent.com/{author}/freshenv/master/fr-flavours.json"
-    gist_reponse = urlopen(url)
+homedir = Path.home()
+basedir = f"{homedir}/.freshenv"
+config = AutoConfig(search_path=f"{basedir}")
+freshenv_config_location = f"{basedir}/settings.ini"
+
+# TODO: validate config file
+if Path(freshenv_config_location).exists():
+    author = config('USERNAME')
+    url = config('GIST_URL')
 else:
+    author = "raiyanyahya"
     url = "https://api.github.com/gists/c4709c540a7c29616c771ab642ed2b8b"
-    gist_reponse = urlopen(url)
+
 
 @click.command("flavours")
 def flavours() -> None:
     """Show all available flavours for provisioning."""
+    gist_reponse = urlopen(url)
     if gist_reponse.getcode() == 200:
         gist_data = loads(gist_reponse.read().decode("utf-8"))
         if re.match(r"^https://raw.githubusercontent.com", url):
@@ -40,5 +45,6 @@ def flavours() -> None:
         exit(1)
 
 
-if __name__ == "__main__":
-    flavours()
+# QA
+# if __name__ == "__main__":
+#     flavours()

@@ -1,17 +1,30 @@
-from io import BytesIO
-from os import makedirs, path
-from configparser import ConfigParser, SectionProxy
-from rich import print
-from jinja2 import Environment
 import click
+from configparser import ConfigParser, SectionProxy
+from decouple import AutoConfig
 from docker import APIClient, errors
 from freshenv.console import console
 from freshenv.provision import get_dockerfile_path
+from io import BytesIO
+from jinja2 import Environment
+from os import makedirs, path
+from pathlib import Path
 from requests import exceptions
+from rich import print
 
+# verbose icecream
+# ic.configureOutput(includeContext=True)
 
-homedir = path.expanduser("~")
-freshenv_config_location = homedir + "/.freshenv/freshenv"
+homedir = Path.home()
+basedir = f"{homedir}/.freshenv"
+config = AutoConfig(search_path=f"{basedir}")
+freshenv_config_location = f"{basedir}/settings.ini"
+
+# TODO: validate config file
+if Path(freshenv_config_location).exists():
+    author = config('USERNAME')
+    url = config('GIST_URL')
+else:
+    author = "raiyanyahya"
 
 
 def create_dockerfile(base: str, install: str, cmd: str) -> str:
@@ -84,7 +97,7 @@ def build(flavour: str, logs: bool) -> None:
     try:
         client = APIClient(base_url="unix://var/run/docker.sock")
         with console.status("Building custom flavour...", spinner="point"):
-            for line in client.build(fileobj=BytesIO(flavour_dockerfile.encode("utf-8")), tag=f"raiyanyahya/freshenv-flavours/{flavour}", rm=True, pull=True, decode=True):
+            for line in client.build(fileobj=BytesIO(flavour_dockerfile.encode("utf-8")), tag=f"{author}/freshenv-flavours/{flavour}", rm=True, pull=True, decode=True):
                 if "errorDetail" in line:
                     raise Exception(line["errorDetail"]["message"])
                 if logs:

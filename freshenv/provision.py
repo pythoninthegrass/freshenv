@@ -1,10 +1,12 @@
 import dockerpty
 import click
-import git
+# import os
+from decouple import AutoConfig
 from docker import APIClient, errors
 from freshenv.console import console
 from freshenv.util import PythonLiteralOption
 from freshenv.view import count_environents
+from icecream import ic
 from io import BytesIO
 from os import getcwd, path
 from pathlib import Path
@@ -12,18 +14,26 @@ from requests import exceptions, get
 from rich import print
 from typing import Dict, List
 
+# verbose icecream
+# ic.configureOutput(includeContext=True)
+
 client: APIClient = None
 current_directory = getcwd()
 folder = path.basename(current_directory)
 local_mount_binds = [f"{current_directory}:/home/{folder}:delegated"]
 google_dns = ["8.8.8.8"]        # TODO: fallback DNS, override with typer
 
-# if .git exists, use git to populate maintainer username
-if Path('../.git').exists():
-    r = git.Repo('../.git').config_reader()
-    author = r.get_value('user', 'name')
+homedir = Path.home()
+basedir = f"{homedir}/.freshenv"
+config = AutoConfig(search_path=f"{basedir}")
+freshenv_config_location = f"{basedir}/settings.ini"
+
+if Path(freshenv_config_location).exists():
+    author = config('USERNAME')
+    url = config('GIST_URL')
 else:
-    author = 'raiyanyahya'
+    author = "raiyanyahya"
+
 
 def get_port_bindings(ports: List[str]) -> Dict:
     port_bindings = {}
@@ -65,7 +75,7 @@ def get_dockerfile_path(flavour: str) -> bytes:
 def build_environment(flavour: str, command: str, ports: List[str], name: str, client: APIClient):
     try:
         with console.status("Flavour doesnt exist locally. Building flavour...", spinner="dots8Bit"):
-            [line for line in client.build(fileobj=BytesIO(get_dockerfile_path(flavour=flavour)), tag=f"raiyanyahya/freshenv-flavours/{flavour}", rm=True, pull=True, decode=True)] # pylint: disable=expression-not-assigned
+            [line for line in client.build(fileobj=BytesIO(get_dockerfile_path(flavour=flavour)), tag=f"{author}/freshenv-flavours/{flavour}", rm=True, pull=True, decode=True)] # pylint: disable=expression-not-assigned
         container = create_environment(flavour, command, ports, name, client)
         dockerpty.start(client, container)
     except (errors.APIError, exceptions.HTTPError):
@@ -90,3 +100,8 @@ def provision(flavour: str, command: str, ports: List[str], name: str) -> None:
         print(":cross_mark_button: Docker not installed or running. ")
     except Exception as e:
         print(f"Unknown exception: {e}")
+
+
+# QA
+# if __name__ == "__main__":
+#     provision()
