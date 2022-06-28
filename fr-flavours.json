@@ -1,0 +1,54 @@
+{
+  "fr-flavours": [
+    {
+      "name": "base",
+      "os" : "ubuntu 18.04",
+      "primary-lang" : "python3",
+      "size" : "260MB",
+      "shell" : "zsh",
+      "user" : "devuser",
+      "packages" : ["wget git python3-pip curl zsh wget nano lsof"],
+      "applications" : []
+    },
+    {
+      "name": "py",
+      "os" : "ubuntu 20.04",
+      "primary-lang" : "python3.10",
+      "size" : "2.0GB",
+      "shell" : "bash",
+      "user" : "appuser",
+      "packages" : ["ca-certificates curl git"],
+      "applications" : []
+    },
+    {
+      "name": "go",
+      "os" : "debian 11",
+      "primary-lang" : "golang latest",
+      "size" : "700MB",
+      "shell" : "zsh",
+      "user" : "devuser",
+      "packages" : ["git curl zsh wget nano lsof"],
+      "applications" : []
+    },
+    {
+      "name": "devenv",
+      "os" : "ubuntu latest",
+      "primary-lang" : "python3, node, java, golang",
+      "size" : "1.6GB",
+      "shell" : "zsh",
+      "user" : "devuser",
+      "packages" : ["build-essential automake make cmake sudo g++ wget git python3-pip curl zsh wget nano nodejs npm fonts-powerline lsof"],
+      "applications" : ["docker vscode-server"]
+    },
+    {
+      "name": "freshenv-scratch",
+      "os" : "Unix-like",
+      "primary-lang" : [],
+      "size" : "6mb",
+      "shell" : "ash",
+      "user" : "devuser",
+      "packages" : [],
+      "applications" : []
+    }
+  ]
+}
